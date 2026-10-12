@@ -31,3 +31,5 @@ index_generator:
   order_by: -date
 per_page: 10
 theme: icarus
+skip_render:
+  - google72e290bf7f9798b5.html
