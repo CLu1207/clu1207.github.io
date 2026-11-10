@@ -60,7 +60,6 @@ $$
 For a thread index $t\in\mathcal{T}$ and a value index $v\in\mathcal{V}$, the mapping produces a logical coordinate:
 $$
 \Phi(t,v)=\bigl(i_1(t,v),i_2(t,v),\ldots,i_d(t,v)\bigr).
-
 $$
 Thus, the mapping describes which logical element is associated with each thread-value pair.
 Let $i_k(t,v)$ denote the $k$-th coordinate of $\Phi(t,v)$. Composing the thread mapping with the memory layout $L=N:S$ gives the linear memory offset associated with each thread-value pair:
@@ -77,7 +76,7 @@ In tiled GEMM, each CUDA thread block computes a $BM \times BN$ output tile. At 
 
 ![](/images/Pasted%20image%2020261108203031.png)
 
-Let $M=N=K=1024$, $BM=BN=128$, and $BK=8$. All three matrices are stored in row-major order using `float`, and each block is one-dimension with 256 threads. Fix one block and one reduction step, and consider the copy of its $A$ tile from global memory to shared memory.
+Let $M=N=K=1024$, $BM=BN=128$, and $BK=8$. All three matrices are stored in row-major order using `float`, and each block is one-dimensional with 256 threads. Fix one block and one reduction step, and consider the copy of its $A$ tile from global memory to shared memory.
 
 We assign each thread a group of $W=4$ consecutive elements along the $K$ dimension, allowing a `float4` load. Each tile row therefore contains $P=BK/W=2$ groups. Let $t \in \{0,\ldots,255\}$ be the linear thread index within the block and $v \in \{0,\ldots,W-1\}$ be the element index within the group. Thread $t$ selects row $\lfloor t/P\rfloor$ and group $t\bmod P$ within that row. Multiplying the group index by $W$ gives the starting column, and adding $v$ gives the element’s column coordinate. The mapping to tile-local coordinates $(m,k)\in\mathcal I=\{0,\ldots,127\}\times\{0,\ldots,7\}$ is therefore
 $$
