@@ -49,7 +49,7 @@ Let $\mathcal{T}$ denote the thread index space and $\mathcal{I}$ denote the log
 $$\mathcal{T}=\{0,1,\ldots,n_{\text{threads}}-1\}$$
 The corresponding logical coordinate space is defined as:
 $$
-\mathcal{I}=\prod_{k=1}^{d}{\{0,1,\ldots,n_k-1\}}
+\mathcal{I}=\prod_{k=1}^{d}\lbrace 0,1,\ldots,n_k-1\rbrace
 $$
 A thread may be responsible for one or multiple logical elements. To describe this more generally, we introduce a value index space $\mathcal{V}$, which indexes the elements assigned to each thread.
 
