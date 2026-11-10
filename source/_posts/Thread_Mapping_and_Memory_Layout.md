@@ -90,21 +90,20 @@ $$
 
 This assignment covers all $128\times8$ elements exactly once.
 
-Both layouts take the same tile-local coordinate $(m,k)$ and return an offset in units of `float` elements from their respective base addresses.
-
-In global memory, the tile is a view into $A$, so adjacent tile rows start $K=1024$ elements apart. If $(m_0,k_0)$ is the tile origin in $A$, the tile base is `A + m0 * K + k0` for a flat pointer `A`. The layout and offset relative to that base are
+In global memory, the tile is a view into row-major $A$, with layout
 $$
 \begin{aligned}
 L_{\mathrm{global}} &= (BM,BK):(K,1)=(128,8):(1024,1)
 \end{aligned}
 $$
-In shared memory, the logical element $(m,k)$ is stored at `As[k][m]` in the array `float As[BK][BM]`. Consecutive values of $m$ occupy consecutive array elements. Relative to `&As[0][0]`, the layout and offset are
+During accumulation along $K$, each step forms an outer product using a column of $A$ tile and a row of $B$ tile. This column of $A$ is noncontiguous in row-major storage, so we transpose the tile in shared memory to make these elements contiguous. The resulting layout is
 
 $$
 \begin{aligned}
 L_{\mathrm{shared}} &= (BM,BK):(1,BM)=(128,8):(1,128)
 \end{aligned}
 $$
+
 Composing each layout with the same thread mapping gives the source and destination offsets for each $(t,v)$.
 $$
 \begin{aligned}
