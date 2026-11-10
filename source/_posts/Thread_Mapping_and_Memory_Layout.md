@@ -104,18 +104,21 @@ L_{\mathrm{shared}} &= (BM,BK):(1,BM)=(128,8):(1,128)
 $$
 
 Composing each layout with the same thread mapping gives the source and destination offsets for each $(t,v)$.
+
+{% raw %}
 $$
 \begin{aligned}
 O_{\mathrm{thread,global}}(t,v)
 &=(L_{\mathrm{global}}\circ\Phi)(t,v) \\
 &= K\left\lfloor\frac{t}{2}\right\rfloor+4(t\bmod 2)+v\\
-&=1024\left\lfloor\frac{t}{2}\right\rfloor+4(t\bmod 2)+v\\
+&=1024\left\lfloor\frac{t}{2}\right\rfloor+4(t\bmod 2)+v \\
 O_{\mathrm{thread,shared}}(t,v)
 &=(L_{\mathrm{shared}}\circ\Phi)(t,v) \\
 &=\left\lfloor\frac{t}{2}\right\rfloor+BM\bigl(4(t\bmod 2)+v\bigr)\\
 &=\left\lfloor\frac{t}{2}\right\rfloor+128\bigl(4(t\bmod 2)+v\bigr)
 \end{aligned}
 $$
+{% endraw %}
 
 The formulas above translate directly into the following CUDA code. The thread mapping determines each thread’s tile-local coordinates, and the two layouts determine the corresponding source and destination offsets.
 
