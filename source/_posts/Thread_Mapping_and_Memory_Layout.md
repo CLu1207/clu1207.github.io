@@ -95,7 +95,7 @@ $$
 L_{\mathrm{global}} &= (BM,BK):(K,1)=(128,8):(1024,1)
 \end{aligned}
 $$
-During accumulation along $K$, each step forms an outer product using a column of $A$ tile and a row of $B$ tile. This column of $A$ is noncontiguous in row-major storage, so we transpose the tile in shared memory to make these elements contiguous. The resulting layout is
+During accumulation along $K$, each step forms an outer product using a column of the $A$ tile and a row of the $B$ tile. This column of $A$ is noncontiguous in row-major storage, so we transpose the tile in shared memory to make these elements contiguous. The resulting layout is
 
 $$
 \begin{aligned}
