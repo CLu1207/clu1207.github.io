@@ -1,3 +1,16 @@
+---
+title: "Thread Mapping and Memory Layout"
+date: 2026-09-21
+excerpt: "Illustrating CUDA memory access through mathematical models of thread mapping and memory layout."
+categories:
+  - CUDA
+tags:
+  - CUDA
+  - GEMM
+  - Matrix Multiplication
+toc: true
+---
+
 ## Introduction
 
 Understanding how threads are assigned to logical data elements, and how those elements are arranged in memory, is essential for reasoning about memory access patterns and designing efficient CUDA kernels.
