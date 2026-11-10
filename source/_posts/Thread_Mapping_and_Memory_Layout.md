@@ -40,7 +40,7 @@ $$
 L = N:S, \; N = (n_1, n_2, \dots, n_d), \; S = (s_1, s_2, \dots, s_d)
 $$
 Consider a multidimensional array $A$ of shape $(2, 3, 4)$. In row-major order, the stride is $S_r = (3 \times 4, 4, 1)=(12, 4, 1)$. In column-major order, it is $S_c = (1, 2, 2\times3)=(1,2,6)$.
-![](/images/Pasted%image%20261021174437.png)
+![](/images/Pasted%20image%2020261021174437.png)
 ## Thread Mapping
 
 Thread mapping and memory layout describe two distinct aspects of data access. Thread mapping determines which logical elements are assigned to each thread, while memory layout determines where those elements are stored. Neither uniquely determines the other.
@@ -49,7 +49,7 @@ Let $\mathcal{T}$ denote the thread index space and $\mathcal{I}$ denote the log
 $$\mathcal{T}=\{0,1,\ldots,n_{\text{threads}}-1\}$$
 The corresponding logical coordinate space is defined as:
 $$
-\mathcal{I}=\prod_{k=1}^{d}{\{0,1,\ldots,n_k-1\}}
+\mathcal{I}=\prod_{k=1}^{d}\lbrace 0,1,\ldots,n_k-1\rbrace
 $$
 A thread may be responsible for one or multiple logical elements. To describe this more generally, we introduce a value index space $\mathcal{V}$, which indexes the elements assigned to each thread.
 
@@ -81,7 +81,7 @@ where $\mathbf{i}(t,v)=\Phi(t,v)$.
 
 In tiled GEMM, each CUDA thread block computes a $BM \times BN$ output tile. At each step along the reduction dimension, the block cooperatively loads a $BM \times BK$ tile of $A$ and a $BK \times BN$ tile of $B$ from global memory into shared memory, then accumulates their product into the output tile.
 
-![](/images/Pasted%image%20261108203031.png)
+![](/images/Pasted%20image%2020261108203031.png)
 
 Let $M=N=K=1024$, $BM=BN=128$, and $BK=8$. All three matrices are stored in row-major order using `float`, and each block has 256 threads. Fix one block and one reduction step, and consider the copy of its $A$ tile from global memory to shared memory.
 
