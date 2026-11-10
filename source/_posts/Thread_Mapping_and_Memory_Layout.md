@@ -49,7 +49,7 @@ Let $\mathcal{T}$ denote the thread index space and $\mathcal{I}$ denote the log
 $$\mathcal{T}=\{0,1,\ldots,n_{\text{threads}}-1\}$$
 The corresponding logical coordinate space is defined as:
 $$
-\mathcal{I}=\prod_{k=1}^{d}\lbrace 0,1,\ldots,n_k-1\rbrace
+\mathcal{I}=\prod_{k=1}^{d}{\{0,1,\ldots,n_k-1\}}
 $$
 A thread may be responsible for one or multiple logical elements. To describe this more generally, we introduce a value index space $\mathcal{V}$, which indexes the elements assigned to each thread.
 
@@ -59,31 +59,25 @@ $$
 $$
 For a thread index $t\in\mathcal{T}$ and a value index $v\in\mathcal{V}$, the mapping produces a logical coordinate:
 $$
-\Phi(t,v)=\mathbf{i}=(i_1,i_2,\ldots,i_d)  
+\Phi(t,v)=\bigl(i_1(t,v),i_2(t,v),\ldots,i_d(t,v)\bigr).
+
 $$
 Thus, the mapping describes which logical element is associated with each thread-value pair.
-As defined earlier, a memory layout $L=N:S$ maps a logical coordinate $\mathbf{i}$ to a linear memory offset:
+Let $i_k(t,v)$ denote the $k$-th coordinate of $\Phi(t,v)$. Composing the thread mapping with the memory layout $L=N:S$ gives the linear memory offset associated with each thread-value pair:
 $$
-L(\mathbf{i})=\sum_{k=1}^{d}i_ks_k
+\begin{aligned}
+O_{\mathrm{thread}}(t,v)
+&=(L\circ\Phi)(t,v)
+=L(\Phi(t,v))
+\end{aligned}
 $$
-By composing the thread mapping $\Phi$ with the memory layout $L$, we obtain the memory offset associated with each thread-value pair:
-
-$$
-O_{\text{thread}}(t,v)=L(\Phi(t,v))
-$$
-Equivalently,
-$$
-O_{\text{thread}}(t,v)=\sum_{k=1}^{d}i_k(t,v)s_k
-$$
-
-where $\mathbf{i}(t,v)=\Phi(t,v)$.
 ## Practical Example
 
 In tiled GEMM, each CUDA thread block computes a $BM \times BN$ output tile. At each step along the reduction dimension, the block cooperatively loads a $BM \times BK$ tile of $A$ and a $BK \times BN$ tile of $B$ from global memory into shared memory, then accumulates their product into the output tile.
 
 ![](/images/Pasted%20image%2020261108203031.png)
 
-Let $M=N=K=1024$, $BM=BN=128$, and $BK=8$. All three matrices are stored in row-major order using `float`, and each block has 256 threads. Fix one block and one reduction step, and consider the copy of its $A$ tile from global memory to shared memory.
+Let $M=N=K=1024$, $BM=BN=128$, and $BK=8$. All three matrices are stored in row-major order using `float`, and each block is one-dimension with 256 threads. Fix one block and one reduction step, and consider the copy of its $A$ tile from global memory to shared memory.
 
 We assign each thread a group of $W=4$ consecutive elements along the $K$ dimension, allowing a `float4` load. Each tile row therefore contains $P=BK/W=2$ groups. Let $t \in \{0,\ldots,255\}$ be the linear thread index within the block and $v \in \{0,\ldots,W-1\}$ be the element index within the group. Thread $t$ selects row $\lfloor t/P\rfloor$ and group $t\bmod P$ within that row. Multiplying the group index by $W$ gives the starting column, and adding $v$ gives the element’s column coordinate. The mapping to tile-local coordinates $(m,k)\in\mathcal I=\{0,\ldots,127\}\times\{0,\ldots,7\}$ is therefore
 $$
@@ -101,27 +95,27 @@ Both layouts take the same tile-local coordinate $(m,k)$ and return an offset in
 In global memory, the tile is a view into $A$, so adjacent tile rows start $K=1024$ elements apart. If $(m_0,k_0)$ is the tile origin in $A$, the tile base is `A + m0 * K + k0` for a flat pointer `A`. The layout and offset relative to that base are
 $$
 \begin{aligned}
-L_{\mathrm{global}} &= (BM,BK):(K,1)=(128,8):(1024,1)\\
-L_{\mathrm{global}}(m,k) &= mK+k
+L_{\mathrm{global}} &= (BM,BK):(K,1)=(128,8):(1024,1)
 \end{aligned}
 $$
 In shared memory, the logical element $(m,k)$ is stored at `As[k][m]` in the array `float As[BK][BM]`. Consecutive values of $m$ occupy consecutive array elements. Relative to `&As[0][0]`, the layout and offset are
 
 $$
 \begin{aligned}
-L_{\mathrm{shared}} &= (BM,BK):(1,BM)=(128,8):(1,128)\\
-L_{\mathrm{shared}}(m,k) &= m+k\,BM
+L_{\mathrm{shared}} &= (BM,BK):(1,BM)=(128,8):(1,128)
 \end{aligned}
 $$
 Composing each layout with the same thread mapping gives the source and destination offsets for each $(t,v)$.
 $$
 \begin{aligned}
 O_{\mathrm{thread,global}}(t,v)
-&=(L_{\mathrm{global}}\circ\Phi)(t,v)
-=1024\left\lfloor\frac{t}{2}\right\rfloor+4(t\bmod 2)+v\\
+&=(L_{\mathrm{global}}\circ\Phi)(t,v) \\
+&= K\left\lfloor\frac{t}{2}\right\rfloor+4(t\bmod 2)+v\\
+&=1024\left\lfloor\frac{t}{2}\right\rfloor+4(t\bmod 2)+v\\
 O_{\mathrm{thread,shared}}(t,v)
-&=(L_{\mathrm{shared}}\circ\Phi)(t,v)
-=\left\lfloor\frac{t}{2}\right\rfloor+128\bigl(4(t\bmod 2)+v\bigr)
+&=(L_{\mathrm{shared}}\circ\Phi)(t,v) \\
+&=\left\lfloor\frac{t}{2}\right\rfloor+BM\bigl(4(t\bmod 2)+v\bigr)\\
+&=\left\lfloor\frac{t}{2}\right\rfloor+128\bigl(4(t\bmod 2)+v\bigr)
 \end{aligned}
 $$
 
