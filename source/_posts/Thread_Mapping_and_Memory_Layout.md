@@ -1,6 +1,6 @@
 ---
 title: "Thread Mapping and Memory Layout"
-date: 2026-09-21
+date: 2026-11-11
 excerpt: "Illustrating CUDA memory access through mathematical models of thread mapping and memory layout."
 categories:
   - CUDA
@@ -67,7 +67,6 @@ $$
 \begin{aligned}
 O_{\mathrm{thread}}(t,v)
 &=(L\circ\Phi)(t,v)
-=L(\Phi(t,v))
 \end{aligned}
 $$
 ## Practical Example
